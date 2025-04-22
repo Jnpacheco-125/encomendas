@@ -29,13 +29,13 @@ public class FuncionarioController {
         this.authService = authService;
         this.funcionarioService = funcionarioService;
     }
-    @Operation(summary = "Login de funcionário", description = "Realiza o login e retorna o token JWT.")
+
+    @Operation(summary = "Login de funcionário", description = "Autentica um funcionário e retorna um token JWT.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login bem-sucedido",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = LoginResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "Credenciais inválidas",
-                    content = @Content)
+            @ApiResponse(responseCode = "401", description = "Credenciais inválidas", content = @Content)
     })
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
