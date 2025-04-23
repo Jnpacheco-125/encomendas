@@ -10,6 +10,7 @@ import com.challenge.encomendas.encomendas.infrastructure.persistence.mappers.Fu
 import com.challenge.encomendas.encomendas.usecase.auth.AuthService;
 import com.challenge.encomendas.encomendas.usecase.cadastro.FuncionarioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,8 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -99,5 +102,42 @@ public class FuncionarioController {
         FuncionarioResponseDTO responseDTO = FuncionarioMapper.toResponseDTO(funcionario);
         return ResponseEntity.ok(responseDTO);
     }
+    @Operation(summary = "Listar todos os funcionários", description = "Retorna uma lista de todos os funcionários cadastrados.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de todos os funcionários retornada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = FuncionarioResponseDTO.class))))
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @GetMapping("/funcionarios/todos")
+    public ResponseEntity<List<FuncionarioResponseDTO>> listarTodosFuncionarios() {
+        List<Funcionario> funcionarios = funcionarioService.buscarTodos();
+        List<FuncionarioResponseDTO> funcionariosResposta = funcionarios.stream()
+                .map(funcionario -> new FuncionarioResponseDTO(
+                        funcionario.getId(),
+                        funcionario.getNome(),
+                        funcionario.getEmail()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(funcionariosResposta);
+    }
 
+    @Operation(summary = "Deletar funcionário por ID", description = "Deleta um funcionário do sistema com base no seu ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Funcionário deletado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @DeleteMapping("/funcionarios/{id}")
+    public ResponseEntity<Void> deletarFuncionario(@PathVariable Long id) {
+        try {
+            funcionarioService.deletarFuncionario(id);
+            return ResponseEntity.noContent().build(); // Retorna 204 No Content em caso de sucesso
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build(); // Retorna o status da exceção (ex: 404)
+        } catch (Exception e) {
+            // Lidar com outras exceções inesperadas (logar, retornar 500, etc.)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
