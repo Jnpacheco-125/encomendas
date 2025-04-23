@@ -5,6 +5,8 @@ import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.login.LoginRequestDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.login.LoginResponseDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
+import com.challenge.encomendas.encomendas.infrastructure.persistence.entities.FuncionarioEntity;
+import com.challenge.encomendas.encomendas.infrastructure.persistence.mappers.FuncionarioMapper;
 import com.challenge.encomendas.encomendas.usecase.auth.AuthService;
 import com.challenge.encomendas.encomendas.usecase.cadastro.FuncionarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,15 +14,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -65,12 +67,37 @@ public class FuncionarioController {
                 cadastroDTO.senha()
         );
 
-        FuncionarioResponseDTO response = new FuncionarioResponseDTO(
-                novoFuncionario.getId(),
-                novoFuncionario.getNome(),
-                novoFuncionario.getEmail()
-        );
-
+        FuncionarioResponseDTO response = FuncionarioMapper.toResponseDTO(novoFuncionario);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    @Operation(summary = "Buscar funcionário por ID", description = "Retorna os detalhes de um funcionário específico com base no seu ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Funcionário encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FuncionarioResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Funcionário não encontrado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @GetMapping("/{id}")
+    public ResponseEntity<FuncionarioResponseDTO> buscarFuncionarioPorId(@PathVariable Long id) {
+        Funcionario funcionario = funcionarioService.buscarPorId(id);
+        FuncionarioResponseDTO responseDTO = FuncionarioMapper.toResponseDTO(funcionario);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @Operation(summary = "Buscar funcionário por e-mail", description = "Retorna os detalhes de um funcionário com base no seu e-mail.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Funcionário encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FuncionarioResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Funcionário não encontrado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @GetMapping("/buscar-por-email")
+    public ResponseEntity<FuncionarioResponseDTO> buscarFuncionarioPorEmail(@RequestParam String email) {
+        Funcionario funcionario = funcionarioService.buscarPorEmail(email);
+        FuncionarioResponseDTO responseDTO = FuncionarioMapper.toResponseDTO(funcionario);
+        return ResponseEntity.ok(responseDTO);
+    }
+
 }
