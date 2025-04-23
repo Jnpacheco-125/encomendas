@@ -3,7 +3,9 @@ package com.challenge.encomendas.encomendas.infrastructure.persistence.mappers;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.FuncionarioResponseDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
 import com.challenge.encomendas.encomendas.infrastructure.persistence.entities.FuncionarioEntity;
+import org.springframework.stereotype.Component;
 
+@Component
 public class FuncionarioMapper {
     public static FuncionarioEntity toEntity(Funcionario funcionario) {
         FuncionarioEntity entity = new FuncionarioEntity();
