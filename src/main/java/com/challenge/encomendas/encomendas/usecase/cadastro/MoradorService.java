@@ -26,6 +26,8 @@ public class MoradorService {
         Morador novoMorador = new Morador();
         novoMorador.setNome(dto.nome());
         novoMorador.setEmail(dto.email());
+        novoMorador.setTelefone(dto.telefone());        // <-- estava faltando
+        novoMorador.setApartamento(dto.apartamento());  // <-- estava faltando
         novoMorador.setSenha(passwordEncoder.encode(dto.senha()));
         novoMorador.adicionarRole(Role.ROLE_MORADOR);
 
