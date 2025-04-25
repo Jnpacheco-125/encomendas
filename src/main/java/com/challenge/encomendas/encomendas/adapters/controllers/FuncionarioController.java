@@ -3,6 +3,7 @@ package com.challenge.encomendas.encomendas.adapters.controllers;
 
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.CadastroFuncionarioDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.FuncionarioResponseDTO;
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.UpdateFuncionarioDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.login.LoginRequestDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.login.LoginResponseDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
@@ -136,6 +137,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "404", description = "Funcionário não encontrado", content = @Content)
     })
     @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/buscar-por-email")
     public ResponseEntity<FuncionarioResponseDTO> buscarFuncionarioPorEmail(@RequestParam String email) {
         Funcionario funcionario = funcionarioService.buscarPorEmail(email);
@@ -149,6 +151,7 @@ public class FuncionarioController {
                             array = @ArraySchema(schema = @Schema(implementation = FuncionarioResponseDTO.class))))
     })
     @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/funcionarios/todos")
     public ResponseEntity<List<FuncionarioResponseDTO>> listarTodosFuncionarios() {
         List<Funcionario> funcionarios = funcionarioService.buscarTodos();
@@ -168,6 +171,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "404", description = "Funcionário não encontrado")
     })
     @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/funcionarios/{id}")
     public ResponseEntity<Void> deletarFuncionario(@PathVariable Long id) {
         try {
@@ -180,4 +184,25 @@ public class FuncionarioController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @Operation(
+            summary = "Atualiza os dados de um funcionário",
+            description = "Atualiza nome e e-mail de um funcionário existente."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Funcionário atualizado com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = FuncionarioResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Funcionário não encontrado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/funcionarios/{id}")
+    public ResponseEntity<FuncionarioResponseDTO> atualizarFuncionario(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateFuncionarioDTO dto) {
+        Funcionario atualizado = funcionarioService.atualizar(id, dto);
+        return ResponseEntity.ok(FuncionarioMapper.toResponseDTO(atualizado));
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.challenge.encomendas.encomendas.infrastructure.persistence.mappers;
 
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.FuncionarioResponseDTO;
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.UpdateFuncionarioDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
 import com.challenge.encomendas.encomendas.infrastructure.persistence.entities.FuncionarioEntity;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,12 @@ public class FuncionarioMapper {
                 funcionario.getEmail()
                 // Se quiser incluir roles no DTO, posso ajustar também
         );
+    }
+    // ✅ Novo método: atualiza os dados com DTO
+    public static void atualizarDados(Funcionario funcionario, UpdateFuncionarioDTO dto) {
+        funcionario.setNome(dto.nome());
+        funcionario.setEmail(dto.email());
+        // Se quiser atualizar senha ou roles, adicione aqui também
     }
 }
 
