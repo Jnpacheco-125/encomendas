@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MoradorMapper {
+
     public static MoradorEntity toEntity(Morador morador) {
         MoradorEntity entity = new MoradorEntity();
         entity.setId(morador.getId());
@@ -15,11 +16,12 @@ public class MoradorMapper {
         entity.setApartamento(morador.getApartamento());
         entity.setEmail(morador.getEmail());
         entity.setSenha(morador.getSenha());
+        entity.setRoles(morador.getRoles()); // ✅ mapeando roles
         return entity;
     }
 
     public static Morador toDomain(MoradorEntity entity) {
-        return new Morador(
+        Morador morador = new Morador(
                 entity.getId(),
                 entity.getNome(),
                 entity.getTelefone(),
@@ -27,6 +29,8 @@ public class MoradorMapper {
                 entity.getEmail(),
                 entity.getSenha()
         );
+        morador.setRoles(entity.getRoles()); // ✅ mapeando roles
+        return morador;
     }
 
     public static MoradorResponseDTO toResponseDTO(Morador morador) {
@@ -36,6 +40,7 @@ public class MoradorMapper {
                 morador.getTelefone(),
                 morador.getApartamento(),
                 morador.getEmail()
+                // ✅ não incluímos roles aqui por padrão — apenas se for necessário
         );
     }
 }

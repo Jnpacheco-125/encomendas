@@ -1,11 +1,15 @@
 package com.challenge.encomendas.encomendas.infrastructure.persistence.entities;
 
 
+import com.challenge.encomendas.encomendas.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "moradores")
@@ -23,4 +27,10 @@ public class MoradorEntity {
     @Column(unique = true)
     private String email;
     private String senha;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "morador_roles", joinColumns = @JoinColumn(name = "morador_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Set<Role> roles = new HashSet<>();
 }

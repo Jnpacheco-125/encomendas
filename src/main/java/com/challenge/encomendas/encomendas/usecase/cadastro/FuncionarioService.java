@@ -1,7 +1,9 @@
 package com.challenge.encomendas.encomendas.usecase.cadastro;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.CadastroFuncionarioDTO;
 import com.challenge.encomendas.encomendas.adapters.gateways.FuncionarioGateway;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
+import com.challenge.encomendas.encomendas.domain.enums.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,13 @@ public class FuncionarioService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Funcionario cadastrar(String nome, String email, String senha) {
+    public Funcionario cadastrar(CadastroFuncionarioDTO dto) {
         Funcionario novoFuncionario = new Funcionario();
-        novoFuncionario.setNome(nome);
-        novoFuncionario.setEmail(email);
-        novoFuncionario.setSenha(passwordEncoder.encode(senha)); // Codifica a senha antes de salvar
+        novoFuncionario.setNome(dto.nome());
+        novoFuncionario.setEmail(dto.email());
+        novoFuncionario.setSenha(passwordEncoder.encode(dto.senha()));
+        novoFuncionario.adicionarRole(dto.role());
+
         return funcionarioGateway.save(novoFuncionario);
     }
     public Funcionario buscarPorId(Long id) {
