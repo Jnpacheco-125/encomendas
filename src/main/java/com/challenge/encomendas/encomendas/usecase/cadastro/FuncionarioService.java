@@ -1,6 +1,7 @@
 package com.challenge.encomendas.encomendas.usecase.cadastro;
 
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.CadastroFuncionarioDTO;
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.UpdateFuncionarioDTO;
 import com.challenge.encomendas.encomendas.adapters.gateways.FuncionarioGateway;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
 import com.challenge.encomendas.encomendas.domain.enums.Role;
@@ -50,5 +51,21 @@ public class FuncionarioService {
         }
         funcionarioGateway.deleteById(id);
     }
+
+    public Funcionario atualizar(Long id, UpdateFuncionarioDTO dto) {
+        Funcionario funcionario = funcionarioGateway.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+
+        if (dto.nome() != null && !dto.nome().isBlank()) {
+            funcionario.setNome(dto.nome());
+        }
+
+        if (dto.email() != null && !dto.email().isBlank()) {
+            funcionario.setEmail(dto.email());
+        }
+
+        return funcionarioGateway.save(funcionario);
+    }
+
 
 }
