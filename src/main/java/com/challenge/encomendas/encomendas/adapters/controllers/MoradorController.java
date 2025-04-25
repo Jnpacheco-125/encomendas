@@ -14,11 +14,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -94,5 +96,24 @@ public class MoradorController {
         MoradorResponseDTO response = MoradorMapper.toResponseDTO(novoMorador);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    @Operation(
+            summary = "Buscar morador por ID",
+            description = "Retorna os detalhes de um morador específico com base no seu ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Morador encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MoradorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Morador não encontrado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<MoradorResponseDTO> buscarMoradorPorId(@PathVariable Long id) {
+        Morador morador = moradorService.buscarPorId(id);
+        MoradorResponseDTO responseDTO = MoradorMapper.toResponseDTO(morador);
+        return ResponseEntity.ok(responseDTO);
+    }
+
 
 }
