@@ -1,5 +1,6 @@
 package com.challenge.encomendas.encomendas.adapters.controllers;
 
+
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.CadastroFuncionarioDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.FuncionarioResponseDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.login.LoginRequestDTO;
@@ -12,6 +13,7 @@ import com.challenge.encomendas.encomendas.usecase.cadastro.FuncionarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,6 +23,9 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -49,11 +54,48 @@ public class FuncionarioController {
     })
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        String token = authService.login(request.email(), request.senha());
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+        try {
+            // Use os métodos `email()` e `senha()` do record
+            String token = authService.autenticar(request.email(), request.senha());
+            return ResponseEntity.ok(new LoginResponseDTO(token));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
-    @Operation(summary = "Cadastro de funcionário", description = "Registra um novo funcionário no sistema.")
+    @Operation(
+            summary = "Cadastro de funcionário",
+            description = "Registra um novo funcionário no sistema.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Exemplo de cadastro de porteiro",
+                                            value = """
+                            {
+                              "nome": "João Porteiro",
+                              "email": "joao@condominio.com",
+                              "senha": "senha123",
+                              "role": "ROLE_PORTEIRO"
+                            }
+                            """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Exemplo de cadastro de admin",
+                                            value = """
+                            {
+                              "nome": "Ana Admin",
+                              "email": "ana@admin.com",
+                              "senha": "senha123",
+                              "role": "ROLE_ADMIN"
+                            }
+                            """
+                                    )
+                            }
+                    )
+            )
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Funcionário cadastrado com sucesso",
                     content = @Content(mediaType = "application/json",
@@ -64,15 +106,12 @@ public class FuncionarioController {
     public ResponseEntity<FuncionarioResponseDTO> cadastrarFuncionario(@Valid @RequestBody CadastroFuncionarioDTO cadastroDTO) {
         log.info("Cadastro solicitado para o email: {}", cadastroDTO.email());
 
-        Funcionario novoFuncionario = funcionarioService.cadastrar(
-                cadastroDTO.nome(),
-                cadastroDTO.email(),
-                cadastroDTO.senha()
-        );
+        Funcionario novoFuncionario = funcionarioService.cadastrar(cadastroDTO);
 
         FuncionarioResponseDTO response = FuncionarioMapper.toResponseDTO(novoFuncionario);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
     @Operation(summary = "Buscar funcionário por ID", description = "Retorna os detalhes de um funcionário específico com base no seu ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Funcionário encontrado",
@@ -81,6 +120,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "404", description = "Funcionário não encontrado", content = @Content)
     })
     @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<FuncionarioResponseDTO> buscarFuncionarioPorId(@PathVariable Long id) {
         Funcionario funcionario = funcionarioService.buscarPorId(id);

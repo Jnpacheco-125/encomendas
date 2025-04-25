@@ -7,29 +7,35 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class FuncionarioMapper {
+
     public static FuncionarioEntity toEntity(Funcionario funcionario) {
         FuncionarioEntity entity = new FuncionarioEntity();
-        entity.setId(funcionario.getId()); // Ou outro getter
+        entity.setId(funcionario.getId());
         entity.setNome(funcionario.getNome());
-        entity.setEmail(funcionario.getEmail()); // Alterando de usuario para email
+        entity.setEmail(funcionario.getEmail());
         entity.setSenha(funcionario.getSenha());
+        entity.setRoles(funcionario.getRoles()); // Mapeando as roles
         return entity;
     }
 
     public static Funcionario toDomain(FuncionarioEntity entity) {
-        return new Funcionario(
+        Funcionario funcionario = new Funcionario(
                 entity.getId(),
                 entity.getNome(),
-                entity.getEmail(), // Alterando de usuario para email
+                entity.getEmail(),
                 entity.getSenha()
         );
+        funcionario.setRoles(entity.getRoles()); // Garantindo que as roles sejam carregadas
+        return funcionario;
     }
+
     public static FuncionarioResponseDTO toResponseDTO(Funcionario funcionario) {
         return new FuncionarioResponseDTO(
                 funcionario.getId(),
                 funcionario.getNome(),
                 funcionario.getEmail()
+                // Se quiser incluir roles no DTO, posso ajustar também
         );
     }
-
 }
+

@@ -1,9 +1,13 @@
 package com.challenge.encomendas.encomendas.usecase.auth;
 
 import com.challenge.encomendas.encomendas.adapters.gateways.FuncionarioGateway;
+import com.challenge.encomendas.encomendas.adapters.gateways.MoradorGateway;
 import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
+import com.challenge.encomendas.encomendas.domain.entities.Morador;
 import com.challenge.encomendas.encomendas.infrastructure.security.JwtUtil;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,28 +16,48 @@ import java.util.Optional;
 @Service
 public class AuthService {
     private final FuncionarioGateway funcionarioGateway;
+    private final MoradorGateway moradorGateway;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService userDetailsService;
 
-    public AuthService(FuncionarioGateway funcionarioGateway, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthService(FuncionarioGateway funcionarioGateway,
+                       MoradorGateway moradorGateway,
+                       PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil,
+                       CustomUserDetailsService userDetailsService) {
         this.funcionarioGateway = funcionarioGateway;
+        this.moradorGateway = moradorGateway;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
     }
 
-    public String login(String email, String senha) {
-        Optional<Funcionario> funcionarioOptional = funcionarioGateway.findByEmail(email);
+    public String autenticar(String email, String senha) {
+        // Tenta buscar primeiro como funcionário
+        Optional<Funcionario> optionalFuncionario = funcionarioGateway.findByEmail(email);
+        if (optionalFuncionario.isPresent()) {
+            Funcionario funcionario = optionalFuncionario.get();
+            if (!passwordEncoder.matches(senha, funcionario.getSenha())) {
+                throw new RuntimeException("Senha inválida para funcionário.");
+            }
 
-        if (funcionarioOptional.isEmpty()) {
-            throw new BadCredentialsException("Usuário não encontrado");
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            return jwtUtil.generateToken(userDetails);
         }
 
-        Funcionario funcionario = funcionarioOptional.get();
+        // Tenta buscar como morador
+        Optional<Morador> optionalMorador = moradorGateway.findByEmail(email);
+        if (optionalMorador.isPresent()) {
+            Morador morador = optionalMorador.get();
+            if (!passwordEncoder.matches(senha, morador.getSenha())) {
+                throw new RuntimeException("Senha inválida para morador.");
+            }
 
-        if (!passwordEncoder.matches(senha, funcionario.getSenha())) {
-            throw new BadCredentialsException("Senha incorreta");
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            return jwtUtil.generateToken(userDetails);
         }
 
-        return jwtUtil.generateToken(funcionario.getEmail());
+        throw new UsernameNotFoundException("Usuário não encontrado com o email: " + email);
     }
 }

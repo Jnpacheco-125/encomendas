@@ -1,10 +1,16 @@
 package com.challenge.encomendas.encomendas.domain.entities;
 
+import com.challenge.encomendas.encomendas.domain.enums.Role;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class Funcionario {
     private Long id;
     private String nome;
     private String email;
     private String senha;
+    private Set<Role> roles = new HashSet<>();
 
     // Construtores
     public Funcionario() {
@@ -15,6 +21,15 @@ public class Funcionario {
         this.email = email;
         this.senha = senha;
     }
+
+    public Funcionario(Long id, String nome, String email, String senha, Set<Role> roles) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.roles = roles != null ? roles : new HashSet<>(); // Evita null pointer caso roles seja null
+    }
+
 
     // Getters e Setters
     public Long getId() { return id; }
@@ -28,4 +43,12 @@ public class Funcionario {
 
     public String getSenha() { return senha; }
     public void setSenha(String senha) { this.senha = senha; }
+
+    public Set<Role> getRoles() { return roles; }
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
+
+    // Método auxiliar para adicionar uma role
+    public void adicionarRole(Role role) {
+        this.roles.add(role);
+    }
 }

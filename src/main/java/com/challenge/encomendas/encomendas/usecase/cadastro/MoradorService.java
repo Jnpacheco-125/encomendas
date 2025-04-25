@@ -1,7 +1,9 @@
 package com.challenge.encomendas.encomendas.usecase.cadastro;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.CadastroMoradorDTO;
 import com.challenge.encomendas.encomendas.adapters.gateways.MoradorGateway;
 import com.challenge.encomendas.encomendas.domain.entities.Morador;
+import com.challenge.encomendas.encomendas.domain.enums.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,13 @@ public class MoradorService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Morador cadastrar(String nome, String telefone, String apartamento, String email, String senha) {
+    public Morador cadastrar(CadastroMoradorDTO dto) {
         Morador novoMorador = new Morador();
-        novoMorador.setNome(nome);
-        novoMorador.setTelefone(telefone);
-        novoMorador.setApartamento(apartamento);
-        novoMorador.setEmail(email);
-        novoMorador.setSenha(passwordEncoder.encode(senha)); // Codifica a senha antes de salvar
+        novoMorador.setNome(dto.nome());
+        novoMorador.setEmail(dto.email());
+        novoMorador.setSenha(passwordEncoder.encode(dto.senha()));
+        novoMorador.adicionarRole(Role.ROLE_MORADOR);
+
         return moradorGateway.save(novoMorador);
     }
 

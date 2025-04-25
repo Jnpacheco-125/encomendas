@@ -6,10 +6,11 @@ import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.Lo
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.MoradorResponseDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Morador;
 import com.challenge.encomendas.encomendas.infrastructure.persistence.mappers.MoradorMapper;
-import com.challenge.encomendas.encomendas.usecase.auth.AuthMoradorService;
+import com.challenge.encomendas.encomendas.usecase.auth.AuthService;
 import com.challenge.encomendas.encomendas.usecase.cadastro.MoradorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,11 +30,11 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Moradores", description = "Operações relacionadas ao gerenciamento de moradores")
 public class MoradorController {
     private final MoradorService moradorService;
-    private final AuthMoradorService authMoradorService; // Injete o serviço de autenticação para moradores
+    private final AuthService authService;  // Injete o serviço de autenticação para moradores
 
-    public MoradorController(MoradorService moradorService, AuthMoradorService authMoradorService) {
+    public MoradorController(MoradorService moradorService, AuthService authService) {
         this.moradorService = moradorService;
-        this.authMoradorService = authMoradorService;
+        this.authService = authService;
     }
 
     @Operation(summary = "Login de morador", description = "Autentica um morador e retorna um token JWT.")
@@ -45,30 +46,53 @@ public class MoradorController {
     })
     @PostMapping("/login")
     public ResponseEntity<LoginMoradorResponseDTO> loginMorador(@Valid @RequestBody LoginMoradorRequestDTO request) {
-        String token = authMoradorService.login(request.email(), request.senha());
-        return ResponseEntity.ok(new LoginMoradorResponseDTO(token));
+        try {
+            // Chama o authService para autenticar o morador e obter o token JWT
+            String token = authService.autenticar(request.email(), request.senha());
+
+            // Retorna o token JWT encapsulado no DTO de resposta
+            return ResponseEntity.ok(new LoginMoradorResponseDTO(token));
+        } catch (Exception e) {
+            // Em caso de erro, retorna resposta com status de "Não autorizado"
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
-    @Operation(summary = "Cadastro de morador", description = "Registra um novo morador no sistema.")
+    @Operation(
+            summary = "Cadastro de morador",
+            description = "Registra um novo morador no sistema.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Exemplo de cadastro de morador",
+                                            value = """
+                                {
+                                  "nome": "Clara Residente",
+                                  "email": "clara@residencial.com",
+                                  "senha": "minhasenha123",
+                                  "telefone": "11987654321",
+                                  "apartamento": "101",
+                                  "role": "ROLE_MORADOR"
+                                }
+                                """
+                                    )
+                            }
+                    )
+            )
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Morador cadastrado com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = MoradorResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Dados inválidos ou morador já existente", content = @Content)
     })
-    @PostMapping("/cadastro")
-    public ResponseEntity<MoradorResponseDTO> cadastrarMorador(@Valid @RequestBody CadastroMoradorDTO cadastroDTO) {
-        log.info("Cadastro de morador solicitado para o email: {}", cadastroDTO.email());
-
-        Morador novoMorador = moradorService.cadastrar(
-                cadastroDTO.nome(),
-                cadastroDTO.telefone(),
-                cadastroDTO.apartamento(),
-                cadastroDTO.email(),
-                cadastroDTO.senha()
-        );
-
+    @PostMapping("/moradores/cadastro")
+    public ResponseEntity<MoradorResponseDTO> cadastrarMorador(@Valid @RequestBody CadastroMoradorDTO dto) {
+        Morador novoMorador = moradorService.cadastrar(dto);
         MoradorResponseDTO response = MoradorMapper.toResponseDTO(novoMorador);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 }
