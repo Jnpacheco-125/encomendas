@@ -134,5 +134,23 @@ public class MoradorController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @Operation(
+            summary = "Buscar morador por telefone",
+            description = "Retorna os detalhes de um morador com base no seu telefone."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Morador encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MoradorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Morador não encontrado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/buscar-por-telefone")
+    public ResponseEntity<MoradorResponseDTO> buscarMoradorPorTelefone(@RequestParam String telefone) {
+        Morador morador = moradorService.buscarPorTelefone(telefone);
+        MoradorResponseDTO responseDTO = MoradorMapper.toResponseDTO(morador);
+        return ResponseEntity.ok(responseDTO);
+    }
 
 }
