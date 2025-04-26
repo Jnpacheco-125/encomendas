@@ -9,6 +9,7 @@ import com.challenge.encomendas.encomendas.infrastructure.persistence.mappers.Mo
 import com.challenge.encomendas.encomendas.usecase.auth.AuthService;
 import com.challenge.encomendas.encomendas.usecase.cadastro.MoradorService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -171,5 +174,33 @@ public class MoradorController {
         MoradorResponseDTO responseDTO = MoradorMapper.toResponseDTO(morador);
         return ResponseEntity.ok(responseDTO);
     }
+
+    @Operation(
+            summary = "Listar todos os moradores",
+            description = "Retorna uma lista com todos os moradores cadastrados no sistema."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de moradores encontrada",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = MoradorResponseDTO.class)))),
+            @ApiResponse(responseCode = "204", description = "Nenhum morador encontrado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<List<MoradorResponseDTO>> listarTodosMoradores() {
+        List<Morador> moradores = moradorService.buscarTodos();
+
+        if (moradores.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204 se não tiver moradores
+        }
+
+        List<MoradorResponseDTO> response = moradores.stream()
+                .map(MoradorMapper::toResponseDTO)
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }
