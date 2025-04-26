@@ -1,9 +1,6 @@
 package com.challenge.encomendas.encomendas.adapters.controllers;
 
-import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.CadastroMoradorDTO;
-import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.LoginMoradorRequestDTO;
-import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.LoginMoradorResponseDTO;
-import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.MoradorResponseDTO;
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.*;
 import com.challenge.encomendas.encomendas.domain.entities.Morador;
 import com.challenge.encomendas.encomendas.infrastructure.persistence.mappers.MoradorMapper;
 import com.challenge.encomendas.encomendas.usecase.auth.AuthService;
@@ -202,5 +199,25 @@ public class MoradorController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Atualizar morador",
+            description = "Atualiza os dados de um morador existente no sistema."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Morador atualizado com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = MoradorResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Morador não encontrado", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<MoradorResponseDTO> atualizarMorador(@PathVariable Long id,
+                                                               @Valid @RequestBody AtualizarMoradorDTO dto) {
+        Morador moradorAtualizado = moradorService.atualizarMorador(id, dto);
+        MoradorResponseDTO response = MoradorMapper.toResponseDTO(moradorAtualizado);
+        return ResponseEntity.ok(response);
+    }
 
 }

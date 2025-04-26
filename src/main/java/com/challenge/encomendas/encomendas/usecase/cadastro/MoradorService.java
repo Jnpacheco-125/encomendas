@@ -1,5 +1,6 @@
 package com.challenge.encomendas.encomendas.usecase.cadastro;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.AtualizarMoradorDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.CadastroMoradorDTO;
 import com.challenge.encomendas.encomendas.adapters.gateways.MoradorGateway;
 import com.challenge.encomendas.encomendas.domain.entities.Morador;
@@ -66,26 +67,27 @@ public class MoradorService {
         moradorGateway.deleteById(id);
     }
 
-    public Morador atualizarMorador(Long id, String nome, String telefone, String apartamento, String email, String novaSenha) {
+    public Morador atualizarMorador(Long id, AtualizarMoradorDTO dto) {
         Morador moradorExistente = buscarPorId(id); // Garante que o morador existe
 
-        if (nome != null) {
-            moradorExistente.setNome(nome);
+        if (dto.nome() != null && !dto.nome().isBlank()) {
+            moradorExistente.setNome(dto.nome());
         }
-        if (telefone != null) {
-            moradorExistente.setTelefone(telefone);
+
+        if (dto.telefone() != null && !dto.telefone().isBlank()) {
+            moradorExistente.setTelefone(dto.telefone());
         }
-        if (apartamento != null) {
-            moradorExistente.setApartamento(apartamento);
+
+        if (dto.apartamento() != null && !dto.apartamento().isBlank()) {
+            moradorExistente.setApartamento(dto.apartamento());
         }
-        if (email != null) {
-            // Opcional: Adicionar lógica para verificar se o novo email já existe
-            moradorExistente.setEmail(email);
-        }
-        if (novaSenha != null && !novaSenha.isEmpty()) {
-            moradorExistente.setSenha(passwordEncoder.encode(novaSenha));
+
+        if (dto.email() != null && !dto.email().isBlank()) {
+            // Opcional: validar se e-mail novo já existe antes de atualizar
+            moradorExistente.setEmail(dto.email());
         }
 
         return moradorGateway.save(moradorExistente);
     }
+
 }
