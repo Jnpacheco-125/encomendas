@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -219,5 +220,27 @@ public class MoradorController {
         MoradorResponseDTO response = MoradorMapper.toResponseDTO(moradorAtualizado);
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Deletar morador por ID", description = "Deleta um morador do sistema com base no seu ID.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Morador deletado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Morador não encontrado")
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/moradores/{id}")
+    public ResponseEntity<Void> deletarMorador(@PathVariable Long id) {
+        try {
+            moradorService.deletarMorador(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).build(); // 404 ou outro
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 erro inesperado
+        }
+    }
+
+
+
+
 
 }
