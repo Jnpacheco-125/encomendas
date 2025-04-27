@@ -91,7 +91,7 @@ public class MoradorController {
                             schema = @Schema(implementation = MoradorResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Dados inválidos ou morador já existente", content = @Content)
     })
-    @PostMapping("/cadastro")
+    @PostMapping("/moradores/cadastro")
     public ResponseEntity<MoradorResponseDTO> cadastrarMorador(@Valid @RequestBody CadastroMoradorDTO dto) {
         Morador novoMorador = moradorService.cadastrar(dto);
         MoradorResponseDTO response = MoradorMapper.toResponseDTO(novoMorador);
