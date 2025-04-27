@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "moradores")
+@Table(name = "morador")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,9 +28,10 @@ public class MoradorEntity {
     private String email;
     private String senha;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "morador_roles", joinColumns = @JoinColumn(name = "morador_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Set<Role> roles = new HashSet<>();
 }
+

@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "funcionarios")
+@Table(name = "funcionario")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,7 +26,7 @@ public class FuncionarioEntity {
     private String email;
     private String senha;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "funcionario_roles", joinColumns = @JoinColumn(name = "funcionario_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "role")

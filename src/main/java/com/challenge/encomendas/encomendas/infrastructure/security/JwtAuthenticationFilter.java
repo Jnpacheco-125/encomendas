@@ -34,7 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Ignorar rotas públicas que não precisam de autenticação
         if (path.startsWith("/swagger-ui") ||
+                path.startsWith("/swagger-ui.html") ||
                 path.startsWith("/v3/api-docs") ||
+                path.startsWith("/v3/api-docs.yaml") ||
+                path.startsWith("/v3/api-docs.json") ||
                 path.startsWith("/h2-console") ||
                 path.equals("/api/funcionarios/login") ||
                 path.equals("/api/funcionarios/cadastro") ||
@@ -44,6 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
+
 
         String jwt = getJwtFromRequest(request);
         log.info("Tentando extrair JWT do header: {}", jwt);
