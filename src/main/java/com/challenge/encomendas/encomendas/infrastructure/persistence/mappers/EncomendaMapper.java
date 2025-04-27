@@ -16,8 +16,8 @@ public class EncomendaMapper {
                 encomenda.getDataRecebimento(),
                 encomenda.getRetirada(),
                 encomenda.getDataRetirada(),
-                FuncionarioMapper.toEntity(encomenda.getFuncionarioRecebimento()), // Conversão adequada
-                MoradorMapper.toEntity(encomenda.getMoradorDestinatario()) // Conversão adequada
+                FuncionarioMapper.toEntity(encomenda.getFuncionarioRecebimento()), // Conversão correta
+                MoradorMapper.toEntity(encomenda.getMoradorDestinatario()) // Conversão correta
         );
     }
 
@@ -32,8 +32,8 @@ public class EncomendaMapper {
                 entity.getDataRecebimento(),
                 entity.getRetirada(),
                 entity.getDataRetirada(),
-                FuncionarioMapper.toDomain(entity.getFuncionarioRecebimento()), // Conversão adequada
-                MoradorMapper.toDomain(entity.getMoradorDestinatario()) // Conversão adequada
+                entity.getFuncionarioRecebimento() != null ? FuncionarioMapper.toDomain(entity.getFuncionarioRecebimento()) : null,
+                entity.getMoradorDestinatario() != null ? MoradorMapper.toDomain(entity.getMoradorDestinatario()) : null
         );
     }
 }

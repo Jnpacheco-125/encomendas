@@ -22,6 +22,10 @@ public interface EncomendaJpaRepository extends JpaRepository<EncomendaEntity, L
     Optional<EncomendaEntity> findById(Long id);
 
     // Buscar todas encomendas ainda não retiradas
+    @Query("SELECT e FROM EncomendaEntity e "
+            + "LEFT JOIN FETCH e.funcionarioRecebimento "
+            + "LEFT JOIN FETCH e.moradorDestinatario "
+            + "WHERE e.retirada = false")
     List<EncomendaEntity> findByRetiradaFalse();
 
     // Buscar encomendas recebidas dentro de um intervalo de tempo

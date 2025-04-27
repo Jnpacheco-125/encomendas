@@ -216,7 +216,7 @@ public class MoradorController {
     @PutMapping("/{id}")
     public ResponseEntity<MoradorResponseDTO> atualizarMorador(@PathVariable Long id,
                                                                @Valid @RequestBody AtualizarMoradorDTO dto) {
-        Morador moradorAtualizado = moradorService.atualizarMorador(id, dto);
+        Morador moradorAtualizado = moradorService.atualizar(id, dto);
         MoradorResponseDTO response = MoradorMapper.toResponseDTO(moradorAtualizado);
         return ResponseEntity.ok(response);
     }
