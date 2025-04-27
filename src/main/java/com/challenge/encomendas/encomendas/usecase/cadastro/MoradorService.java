@@ -67,27 +67,28 @@ public class MoradorService {
         moradorGateway.deleteById(id);
     }
 
-    public Morador atualizarMorador(Long id, AtualizarMoradorDTO dto) {
-        Morador moradorExistente = buscarPorId(id); // Garante que o morador existe
+    public Morador atualizar(Long id, AtualizarMoradorDTO dto) {
+        Morador morador = moradorGateway.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Morador não encontrado"));
 
         if (dto.nome() != null && !dto.nome().isBlank()) {
-            moradorExistente.setNome(dto.nome());
+            morador.setNome(dto.nome());
         }
 
         if (dto.telefone() != null && !dto.telefone().isBlank()) {
-            moradorExistente.setTelefone(dto.telefone());
+            morador.setTelefone(dto.telefone());
         }
 
         if (dto.apartamento() != null && !dto.apartamento().isBlank()) {
-            moradorExistente.setApartamento(dto.apartamento());
+            morador.setApartamento(dto.apartamento());
         }
 
         if (dto.email() != null && !dto.email().isBlank()) {
-            // Opcional: validar se e-mail novo já existe antes de atualizar
-            moradorExistente.setEmail(dto.email());
+            morador.setEmail(dto.email());
         }
 
-        return moradorGateway.save(moradorExistente);
+        return moradorGateway.save(morador);
     }
+
 
 }
