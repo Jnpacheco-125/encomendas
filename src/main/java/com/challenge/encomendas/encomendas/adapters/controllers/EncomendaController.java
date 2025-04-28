@@ -33,7 +33,7 @@ public class EncomendaController {
 
     @Operation(
             summary = "Cadastro de encomenda",
-            description = "Registra uma nova encomenda no sistema.",
+            description = "Registra uma nova encomenda no sistema e envia uma notificação por e-mail ao morador.",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     content = @Content(
                             mediaType = "application/json",
