@@ -1,11 +1,15 @@
 package com.challenge.encomendas.encomendas.usecase.cadastro;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.EncomendaRequestDTO;
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.FuncionarioResponseDTO;
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.MoradorResponseDTO;
 import com.challenge.encomendas.encomendas.adapters.gateways.EncomendaGateway;
 import com.challenge.encomendas.encomendas.adapters.gateways.FuncionarioGateway;
 import com.challenge.encomendas.encomendas.adapters.gateways.MoradorGateway;
 import com.challenge.encomendas.encomendas.domain.entities.Encomenda;
-import com.challenge.encomendas.encomendas.infrastructure.persistence.entities.EncomendaEntity;
-import com.challenge.encomendas.encomendas.infrastructure.persistence.mappers.EncomendaMapper;
+import com.challenge.encomendas.encomendas.domain.entities.Funcionario;
+import com.challenge.encomendas.encomendas.domain.entities.Morador;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,8 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @Service
 public class EncomendaService {
@@ -37,18 +40,31 @@ public class EncomendaService {
     }
 
 
-    public Encomenda cadastrarEncomenda(Encomenda encomenda) {
-        if (encomenda.getNomeDestinatario() == null || encomenda.getApartamento() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome do destinatário e apartamento são obrigatórios.");
-        }
-        encomenda.setDataRecebimento(LocalDateTime.now());
-        encomenda.setRetirada(false); // Inicialmente, a encomenda não está retirada
+    public Encomenda cadastrar(EncomendaRequestDTO dto) {
+        Encomenda novaEncomenda = new Encomenda();
+        novaEncomenda.setNomeDestinatario(dto.nomeDestinatario());
+        novaEncomenda.setApartamento(dto.apartamento());
+        novaEncomenda.setDescricao(dto.descricao());
+        novaEncomenda.setDataRecebimento(dto.dataRecebimento());
+        novaEncomenda.setRetirada(dto.retirada());
+        novaEncomenda.setDataRetirada(dto.dataRetirada());
 
-        // Exemplo de uso do PasswordEncoder (se necessário)
-         //encomenda.setAlgumCampo(passwordEncoder.encode(encomenda.getAlgumCampo()));
+        // Buscar funcionário e morador pelo banco de dados utilizando seus IDs
+        FuncionarioResponseDTO funcionarioDTO = dto.funcionarioRecebimento();
+        Funcionario funcionarioRecebimento = funcionarioGateway.findById(funcionarioDTO.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
 
-        return encomendaGateway.save(encomenda);
+        MoradorResponseDTO moradorDTO = dto.moradorDestinatario();
+        Morador moradorDestinatario = moradorGateway.findById(moradorDTO.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Morador não encontrado"));
+
+        novaEncomenda.setFuncionarioRecebimento(funcionarioRecebimento);
+        novaEncomenda.setMoradorDestinatario(moradorDestinatario);
+
+        return encomendaGateway.save(novaEncomenda);
     }
+
+
 
     public Encomenda buscarPorId(Long id) {
         return encomendaGateway.findById(id)

@@ -1,5 +1,6 @@
 package com.challenge.encomendas.encomendas.infrastructure.persistence.mappers;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.EncomendaResponseDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Encomenda;
 import com.challenge.encomendas.encomendas.infrastructure.persistence.entities.EncomendaEntity;
 
@@ -36,5 +37,26 @@ public class EncomendaMapper {
                 entity.getMoradorDestinatario() != null ? MoradorMapper.toDomain(entity.getMoradorDestinatario()) : null
         );
     }
+
+
+        public static EncomendaResponseDTO toResponseDTO(Encomenda encomenda) {
+            if (encomenda == null) {
+                return null;
+            }
+
+            return new EncomendaResponseDTO(
+                    encomenda.getId(),
+                    encomenda.getNomeDestinatario(),
+                    encomenda.getApartamento(),
+                    encomenda.getDescricao(),
+                    encomenda.getDataRecebimento(),
+                    encomenda.getRetirada(),
+                    encomenda.getDataRetirada(),
+                    FuncionarioMapper.toResponseDTO(encomenda.getFuncionarioRecebimento()),
+                    MoradorMapper.toResponseDTO(encomenda.getMoradorDestinatario())
+            );
+        }
 }
+
+
 
