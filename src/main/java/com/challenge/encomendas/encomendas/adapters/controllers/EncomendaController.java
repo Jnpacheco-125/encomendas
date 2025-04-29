@@ -100,6 +100,22 @@ public class EncomendaController {
 
         return ResponseEntity.ok(response);
     }
+    @Operation(summary = "Buscar encomenda por ID", description = "Retorna os detalhes de uma encomenda com base no seu ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Encomenda encontrada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EncomendaResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Encomenda não encontrada", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
+    @GetMapping("/{id}")
+    public ResponseEntity<EncomendaResponseDTO> buscarPorId(@PathVariable Long id) {
+        Encomenda encomenda = encomendaService.buscarPorId(id); // esse método deve lançar exceção se não encontrar
+        EncomendaResponseDTO responseDTO = EncomendaMapper.toResponseDTO(encomenda);
+        return ResponseEntity.ok(responseDTO);
+    }
 
 
     @PreAuthorize("hasRole('PORTEIRO')")
