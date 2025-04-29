@@ -19,6 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/encomendas")
@@ -78,6 +81,24 @@ public class EncomendaController {
         EncomendaResponseDTO response = EncomendaMapper.toResponseDTO(novaEncomenda);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    @Operation(summary = "Listar encomendas pendentes", description = "Retorna todas as encomendas que ainda não foram retiradas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de encomendas pendentes retornada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EncomendaResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO') or hasRole('MORADOR')")
+    @GetMapping("/pendentes")
+    public ResponseEntity<List<EncomendaResponseDTO>> listarPendentes() {
+        List<Encomenda> encomendas = encomendaService.buscarEncomendasPendentes();
+        List<EncomendaResponseDTO> response = encomendas.stream()
+                .map(EncomendaMapper::toResponseDTO)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 
 
