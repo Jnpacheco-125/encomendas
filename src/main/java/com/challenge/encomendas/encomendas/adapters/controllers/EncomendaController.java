@@ -116,7 +116,24 @@ public class EncomendaController {
         EncomendaResponseDTO responseDTO = EncomendaMapper.toResponseDTO(encomenda);
         return ResponseEntity.ok(responseDTO);
     }
+    @Operation(summary = "Buscar encomendas por morador", description = "Retorna todas as encomendas associadas a um morador específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Encomendas encontradas com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EncomendaResponseDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
+    @GetMapping("/morador/{moradorId}")
+    public ResponseEntity<List<EncomendaResponseDTO>> buscarPorMorador(@PathVariable Long moradorId) {
+        List<Encomenda> encomendas = encomendaService.buscarEncomendasPorMorador(moradorId);
+        List<EncomendaResponseDTO> response = encomendas.stream()
+                .map(EncomendaMapper::toResponseDTO)
+                .toList();
 
+        return ResponseEntity.ok(response);
+    }
 
     @PreAuthorize("hasRole('PORTEIRO')")
     @PutMapping("/{id}/retirada")
