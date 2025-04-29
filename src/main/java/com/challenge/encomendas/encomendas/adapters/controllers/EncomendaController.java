@@ -135,10 +135,24 @@ public class EncomendaController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasRole('PORTEIRO')")
-    @PutMapping("/{id}/retirada")
-    public ResponseEntity<Encomenda> confirmarRetirada(@PathVariable Long id) {
-        return ResponseEntity.ok(encomendaService.confirmarRetirada(id));
+    @Operation(
+            summary = "Confirmar retirada de encomenda",
+            description = "Marca a encomenda como retirada, registrando a data automaticamente."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Encomenda retirada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EncomendaResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Encomenda não encontrada", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
+    })
+    @SecurityRequirement(name = "Bearer Auth")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
+    @PutMapping("/{id}/confirmar-retirada")
+    public ResponseEntity<EncomendaResponseDTO> confirmarRetirada(@PathVariable Long id) {
+        Encomenda encomenda = encomendaService.confirmarRetirada(id);
+        EncomendaResponseDTO responseDTO = EncomendaMapper.toResponseDTO(encomenda);
+        return ResponseEntity.ok(responseDTO);
     }
 }
 

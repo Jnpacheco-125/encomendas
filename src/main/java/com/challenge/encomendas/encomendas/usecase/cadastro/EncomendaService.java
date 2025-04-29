@@ -117,16 +117,59 @@ public class EncomendaService {
         }
         encomendaGateway.deleteById(id);
     }
-
     public Encomenda confirmarRetirada(Long id) {
         Encomenda encomenda = encomendaGateway.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Encomenda não encontrada."));
 
+        if (encomenda.getRetirada()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Encomenda já foi retirada.");
+        }
+
         encomenda.setRetirada(true);
         encomenda.setDataRetirada(LocalDateTime.now());
 
-        return encomendaGateway.save(encomenda);
+        Encomenda atualizada = encomendaGateway.save(encomenda);
+
+        if (atualizada.getMoradorDestinatario() != null) {
+            System.out.println("Email do morador: " + atualizada.getMoradorDestinatario().getEmail());
+
+            enviarConfirmacaoEmail(atualizada.getMoradorDestinatario());
+        } else {
+            System.err.println("Erro: Morador não foi carregado corretamente!");
+        }
+
+
+        return atualizada;
     }
+    private void enviarConfirmacaoEmail(Morador morador) {
+        if (morador != null && morador.getEmail() != null) {
+            // Validação do formato do e-mail
+            if (!morador.getEmail().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+                System.err.println("E-mail inválido: " + morador.getEmail());
+                return;
+            }
+
+            System.out.println(morador);
+
+            var message = new SimpleMailMessage();
+            message.setFrom("noreply@email.com");
+            message.setTo(morador.getEmail());
+            message.setSubject("Encomenda retirada com sucesso");
+            message.setText("Confirmamos que sua encomenda foi retirada na portaria.");
+
+            try {
+                javaMailSender.send(message);
+                System.out.println("E-mail de confirmação enviado para: " + morador.getEmail());
+            } catch (MailException e) {
+                System.err.println("Erro ao enviar e-mail de confirmação: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("Dados de morador inválidos para envio de e-mail.");
+        }
+    }
+
+
 }
 
 
