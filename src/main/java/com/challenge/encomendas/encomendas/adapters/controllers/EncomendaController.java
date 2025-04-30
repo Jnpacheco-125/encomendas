@@ -1,5 +1,6 @@
 package com.challenge.encomendas.encomendas.adapters.controllers;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.AtualizarEncomendaDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.EncomendaRequestDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.EncomendaResponseDTO;
 import com.challenge.encomendas.encomendas.domain.entities.Encomenda;
@@ -135,24 +136,40 @@ public class EncomendaController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(
-            summary = "Confirmar retirada de encomenda",
-            description = "Marca a encomenda como retirada, registrando a data automaticamente."
-    )
+    @Operation(summary = "Confirmar retirada de encomenda", description = "Atualiza uma encomenda para indicar que foi retirada")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Encomenda retirada com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = EncomendaResponseDTO.class))),
             @ApiResponse(responseCode = "404", description = "Encomenda não encontrada", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Encomenda já foi retirada", content = @Content)
+    })
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
+    @PatchMapping("/{id}/retirada")
+    public ResponseEntity<EncomendaResponseDTO> confirmarRetirada(
+            @PathVariable Long id,
+            @RequestBody AtualizarEncomendaDTO dto) {
+        Encomenda encomendaAtualizada = encomendaService.confirmarRetirada(id, dto);
+        return ResponseEntity.ok(EncomendaMapper.toResponseDTO(encomendaAtualizada));
+    }
+
+    @Operation(summary = "Listar encomendas retiradas", description = "Retorna todas as encomendas que já foram retiradas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de encomendas retiradas retornada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = EncomendaResponseDTO.class))),
             @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
     })
     @SecurityRequirement(name = "Bearer Auth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
-    @PutMapping("/{id}/confirmar-retirada")
-    public ResponseEntity<EncomendaResponseDTO> confirmarRetirada(@PathVariable Long id) {
-        Encomenda encomenda = encomendaService.confirmarRetirada(id);
-        EncomendaResponseDTO responseDTO = EncomendaMapper.toResponseDTO(encomenda);
-        return ResponseEntity.ok(responseDTO);
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO') or hasRole('MORADOR')")
+    @GetMapping("/retiradas")
+    public ResponseEntity<List<EncomendaResponseDTO>> listarRetiradas() {
+        List<Encomenda> encomendas = encomendaService.buscarEncomendasRetiradas();
+        List<EncomendaResponseDTO> response = encomendas.stream()
+                .map(EncomendaMapper::toResponseDTO)
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 }
 
