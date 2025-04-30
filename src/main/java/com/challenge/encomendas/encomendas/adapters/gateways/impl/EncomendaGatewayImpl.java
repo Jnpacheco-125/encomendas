@@ -46,6 +46,13 @@ public class EncomendaGatewayImpl implements EncomendaGateway {
                 .map(EncomendaMapper::toDomain)
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<Encomenda> findAllByRetiradaTrue() {
+        return encomendaJpaRepository.findByRetiradaTrue()
+                .stream()
+                .map(EncomendaMapper::toDomain)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<Encomenda> findByMoradorDestinatarioId(Long moradorId) {

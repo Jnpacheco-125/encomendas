@@ -1,5 +1,6 @@
 package com.challenge.encomendas.encomendas.usecase.cadastro;
 
+import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.AtualizarEncomendaDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.encomendas.EncomendaRequestDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.funcionarios.FuncionarioResponseDTO;
 import com.challenge.encomendas.encomendas.adapters.controllers.dto.moradores.MoradorResponseDTO;
@@ -107,6 +108,10 @@ public class EncomendaService {
         return encomendaGateway.findAllByRetiradaFalse(); // Removendo .map(EncomendaMapper::toDomain)
     }
 
+    public List<Encomenda> buscarEncomendasRetiradas() {
+        return encomendaGateway.findAllByRetiradaTrue();
+    }
+
     public List<Encomenda> buscarEncomendasPorMorador(Long moradorId) {
         return encomendaGateway.findByMoradorDestinatarioId(moradorId);
     }
@@ -117,7 +122,7 @@ public class EncomendaService {
         }
         encomendaGateway.deleteById(id);
     }
-    public Encomenda confirmarRetirada(Long id) {
+    public Encomenda confirmarRetirada(Long id, AtualizarEncomendaDTO dto) {
         Encomenda encomenda = encomendaGateway.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Encomenda não encontrada."));
 
@@ -125,22 +130,22 @@ public class EncomendaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Encomenda já foi retirada.");
         }
 
-        encomenda.setRetirada(true);
+        // Atualizando a encomenda com os dados do DTO
+        encomenda.setRetirada(dto.retirada());
         encomenda.setDataRetirada(LocalDateTime.now());
 
         Encomenda atualizada = encomendaGateway.save(encomenda);
 
         if (atualizada.getMoradorDestinatario() != null) {
             System.out.println("Email do morador: " + atualizada.getMoradorDestinatario().getEmail());
-
             enviarConfirmacaoEmail(atualizada.getMoradorDestinatario());
         } else {
             System.err.println("Erro: Morador não foi carregado corretamente!");
         }
 
-
         return atualizada;
     }
+
     private void enviarConfirmacaoEmail(Morador morador) {
         if (morador != null && morador.getEmail() != null) {
             // Validação do formato do e-mail

@@ -9,23 +9,24 @@ public class EncomendaMapper {
     public static EncomendaEntity toEntity(Encomenda encomenda) {
         if (encomenda == null) return null;
 
-        return new EncomendaEntity(
-                null, // O ID deve ser gerado pelo banco
-                encomenda.getNomeDestinatario(),
-                encomenda.getApartamento(),
-                encomenda.getDescricao(),
-                encomenda.getDataRecebimento(),
-                encomenda.getRetirada(),
-                encomenda.getDataRetirada(),
-                FuncionarioMapper.toEntity(encomenda.getFuncionarioRecebimento()), // Conversão correta
-                MoradorMapper.toEntity(encomenda.getMoradorDestinatario()) // Conversão correta
-        );
+        EncomendaEntity entity = new EncomendaEntity();
+        entity.setId(encomenda.getId());
+        entity.setNomeDestinatario(encomenda.getNomeDestinatario());
+        entity.setApartamento(encomenda.getApartamento());
+        entity.setDescricao(encomenda.getDescricao());
+        entity.setDataRecebimento(encomenda.getDataRecebimento());
+        entity.setRetirada(encomenda.getRetirada());
+        entity.setDataRetirada(encomenda.getDataRetirada());
+        entity.setFuncionarioRecebimento(FuncionarioMapper.toEntity(encomenda.getFuncionarioRecebimento()));
+        entity.setMoradorDestinatario(MoradorMapper.toEntity(encomenda.getMoradorDestinatario()));
+
+        return entity;
     }
 
     public static Encomenda toDomain(EncomendaEntity entity) {
         if (entity == null) return null;
 
-        return new Encomenda(
+        Encomenda encomenda = new Encomenda(
                 entity.getId(),
                 entity.getNomeDestinatario(),
                 entity.getApartamento(),
@@ -36,10 +37,13 @@ public class EncomendaMapper {
                 entity.getFuncionarioRecebimento() != null ? FuncionarioMapper.toDomain(entity.getFuncionarioRecebimento()) : null,
                 entity.getMoradorDestinatario() != null ? MoradorMapper.toDomain(entity.getMoradorDestinatario()) : null
         );
+
+        return encomenda;
     }
 
 
-        public static EncomendaResponseDTO toResponseDTO(Encomenda encomenda) {
+
+    public static EncomendaResponseDTO toResponseDTO(Encomenda encomenda) {
             if (encomenda == null) {
                 return null;
             }
