@@ -91,7 +91,7 @@ public class EncomendaController {
             @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
     })
     @SecurityRequirement(name = "Bearer Auth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO') or hasRole('MORADOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
     @GetMapping("/pendentes")
     public ResponseEntity<List<EncomendaResponseDTO>> listarPendentes() {
         List<Encomenda> encomendas = encomendaService.buscarEncomendasPendentes();
@@ -125,7 +125,7 @@ public class EncomendaController {
             @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
     })
     @SecurityRequirement(name = "Bearer Auth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO') or hasRole('MORADOR')")
     @GetMapping("/morador/{moradorId}")
     public ResponseEntity<List<EncomendaResponseDTO>> buscarPorMorador(@PathVariable Long moradorId) {
         List<Encomenda> encomendas = encomendaService.buscarEncomendasPorMorador(moradorId);
@@ -161,7 +161,7 @@ public class EncomendaController {
             @ApiResponse(responseCode = "403", description = "Acesso não autorizado", content = @Content)
     })
     @SecurityRequirement(name = "Bearer Auth")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO') or hasRole('MORADOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('PORTEIRO')")
     @GetMapping("/retiradas")
     public ResponseEntity<List<EncomendaResponseDTO>> listarRetiradas() {
         List<Encomenda> encomendas = encomendaService.buscarEncomendasRetiradas();
